@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextSearchDemo", "FullTextSearchDemo\FullTextSearchDemo.csproj", "{B6442C99-6451-4696-86F4-FDBB1E088A11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextSearchDemo.SearchEngine", "FullTextSearchDemo.SearchEngine\FullTextSearchDemo.SearchEngine.csproj", "{B4C91871-E16B-4E25-B96D-D019A431106A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextSearchDemo.SearchEngine.Tests", "FullTextSearchDemo.SearchEngine.Tests\FullTextSearchDemo.SearchEngine.Tests.csproj", "{5C1D2DD2-A5C0-4F77-ABB7-67302A9D9141}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{B6442C99-6451-4696-86F4-FDBB1E088A11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6442C99-6451-4696-86F4-FDBB1E088A11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6442C99-6451-4696-86F4-FDBB1E088A11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4C91871-E16B-4E25-B96D-D019A431106A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4C91871-E16B-4E25-B96D-D019A431106A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4C91871-E16B-4E25-B96D-D019A431106A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4C91871-E16B-4E25-B96D-D019A431106A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C1D2DD2-A5C0-4F77-ABB7-67302A9D9141}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C1D2DD2-A5C0-4F77-ABB7-67302A9D9141}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C1D2DD2-A5C0-4F77-ABB7-67302A9D9141}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C1D2DD2-A5C0-4F77-ABB7-67302A9D9141}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
