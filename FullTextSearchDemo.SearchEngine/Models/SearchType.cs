@@ -1,4 +1,4 @@
-namespace FullTextSearchDemo.SearchEngine.Configuration;
+namespace FullTextSearchDemo.SearchEngine.Models;
 
 public enum SearchType
 {

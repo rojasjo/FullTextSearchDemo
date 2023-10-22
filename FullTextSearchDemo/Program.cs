@@ -1,5 +1,6 @@
 using FullTextSearchDemo.Search;
 using FullTextSearchDemo.SearchEngine;
+using FullTextSearchDemo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddSearchEngineServices(new ProductConfiguration());
 
 var app = builder.Build();
