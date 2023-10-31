@@ -17,7 +17,7 @@ public class ProductService : IProductService
     public IEnumerable<Product> GetProducts(GetProductsQuery query)
     {
         var searchTerm = new Dictionary<string, string?>();
-        
+
         if (!string.IsNullOrWhiteSpace(query.Name))
         {
             searchTerm.Add(nameof(Product.Name), query.Name.ToLower());
@@ -55,5 +55,22 @@ public class ProductService : IProductService
     public void Add(Product product)
     {
         _searchEngine.Add(product);
+    }
+
+    public void Update(int id, Product product)
+    {
+        _searchEngine.Update(product);
+    }
+
+    public void Delete(int id)
+    {
+        //retrieve your item from the data store
+        var product = new Product
+        {
+            Id = id,
+            Name = "",
+        };
+
+        _searchEngine.Remove(product);
     }
 }

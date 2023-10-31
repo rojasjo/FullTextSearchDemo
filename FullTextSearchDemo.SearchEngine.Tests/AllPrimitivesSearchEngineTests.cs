@@ -18,9 +18,9 @@ public class SearchEngineForElementsTests
     [SetUp]
     public void Setup()
     {
-        _documentWriter.WriteDocument(new Element());
+        _documentWriter.AddDocument(new Element());
 
-        _documentWriter.WriteDocument(new Element
+        _documentWriter.AddDocument(new Element
         {
             BooleanProperty = true,
             ByteProperty = 5,
@@ -39,7 +39,7 @@ public class SearchEngineForElementsTests
             UInt16Property = 65535
         });
 
-        _documentWriter.WriteDocument(new Element
+        _documentWriter.AddDocument(new Element
         {
             BooleanProperty = true,
             ByteProperty = 1,
@@ -76,11 +76,9 @@ public class SearchEngineForElementsTests
     [TestCase("A")]
     public void Search_ExactSearchWithCorrectTerm_ReturnsAllElements(string search)
     {
-        
         var result = _searchEngine.Search(new AllFieldsSearchQuery
             { SearchTerm = search, Type = SearchType.ExactMatch }).ToList();
-
-
+        
         Assert.That(result, Has.Count.EqualTo(3));
     }
 

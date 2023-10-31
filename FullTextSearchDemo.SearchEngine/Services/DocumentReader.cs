@@ -6,7 +6,7 @@ using LuceneDirectory = Lucene.Net.Store.Directory;
 
 namespace FullTextSearchDemo.SearchEngine.Services;
 
-internal sealed class DocumentReader<T> : IDocumentReader<T> where T : class
+internal sealed class DocumentReader<T> : IDocumentReader<T> where T : IDocument
 {
     private readonly IndexSearcher _searcher;
 
@@ -29,6 +29,7 @@ internal sealed class DocumentReader<T> : IDocumentReader<T> where T : class
         // Search all string properties for the search term
         var searchDictionary = typeof(T).GetProperties().Select(property => property.Name)
             .Select(fieldName => new { fieldName, type = instance.GetType().GetProperty(fieldName)?.PropertyType })
+            .Where(p => p.fieldName != nameof(IDocument.UniqueKey))
             .Where(t => t.type != null)
             .Where(t => t.type == string.Empty.GetType())
             .Select(t => t.fieldName).ToDictionary(fieldName => fieldName, _ => searchQuery.SearchTerm);

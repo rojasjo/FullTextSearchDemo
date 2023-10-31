@@ -57,4 +57,32 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Error: {ex.Message}");
         }
     }
+
+    [HttpPut("{id:int}")]
+    public IActionResult PutProduct(int id, [FromBody] Product product)
+    {
+        try
+        {
+            _productService.Update(id, product);
+            return Ok("Product updated to the search index.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error: {ex.Message}");
+        }
+    }
+
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
+    {
+        try
+        {
+            _productService.Delete(id);
+            return Ok("Product deleted to the search index.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error: {ex.Message}");
+        }
+    }
 }

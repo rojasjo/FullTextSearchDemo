@@ -1,5 +1,3 @@
-using FullTextSearchDemo.SearchEngine.Configuration;
-
 namespace FullTextSearchDemo.SearchEngine.Models;
 
 public abstract class SearchQuery

@@ -1,8 +1,8 @@
 using FullTextSearchDemo.SearchEngine.Configuration;
 using FullTextSearchDemo.SearchEngine.Helpers;
+using FullTextSearchDemo.SearchEngine.Models;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
@@ -10,10 +10,8 @@ using LuceneDirectory = Lucene.Net.Store.Directory;
 
 namespace FullTextSearchDemo.SearchEngine.Services;
 
-internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : class
+internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : IDocument
 {
-    private readonly string _index;
-
     public IndexWriter Writer { get; }
 
     public DocumentWriter(IIndexConfiguration<T> configuration)
@@ -23,10 +21,8 @@ internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : class
             throw new ArgumentException("Index name must be set before using DocumentWriter.");
         }
 
-        _index = configuration.IndexName;
-        
         // Open the index directory
-        var indexPath = Path.Combine(Environment.CurrentDirectory, _index);
+        var indexPath = Path.Combine(Environment.CurrentDirectory, configuration.IndexName);
         LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
         // Create an analyzer to process the text
@@ -40,16 +36,24 @@ internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : class
         // Create the index writer with the above configuration
         Writer = new IndexWriter(indexDir, indexConfig);
     }
-    
-    public void WriteDocument(T generic)
+
+    public void AddDocument(T generic)
     {
         var document = generic.ConvertToDocument();
-        WriteDocument(document);
+        Writer.AddDocument(document);
+        Writer.Commit();
+    }
+
+    public void UpdateDocument(T generic)
+    {
+        var document = generic.ConvertToDocument();
+        Writer.UpdateDocument(new Term(nameof(IDocument.UniqueKey), generic.UniqueKey), document);
+        Writer.Commit();
     }
     
-    private void WriteDocument(Document document)
+    public void RemoveDocument(T generic)
     {
-        Writer.AddDocument(document);
+        Writer.DeleteDocuments(new Term(nameof(IDocument.UniqueKey), generic.UniqueKey));
         Writer.Commit();
     }
 }

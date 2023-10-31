@@ -1,4 +1,5 @@
 using System.Reflection;
+using FullTextSearchDemo.SearchEngine.Models;
 using Lucene.Net.Documents;
 
 namespace FullTextSearchDemo.SearchEngine.Helpers;
@@ -12,7 +13,7 @@ public static class GenericDocumentExtensions
     /// <param name="document"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static T ConvertToObjectOfType<T>(this Document document) where T : class
+    public static T ConvertToObjectOfType<T>(this Document document) where T : IDocument
     {
         var instance = Activator.CreateInstance<T>();
 
@@ -39,7 +40,7 @@ public static class GenericDocumentExtensions
     /// <param name="instance"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Document ConvertToDocument<T>(this T instance) where T : class
+    public static Document ConvertToDocument<T>(this T instance) where T : IDocument
     {
         var document = new Document();
 
@@ -57,11 +58,11 @@ public static class GenericDocumentExtensions
     }
 
     private static void SetPropertyValue<T>(PropertyInfo property, T instance, string fieldValue)
-        where T : class
+        where T : IDocument
     {
         var propertyType = property.PropertyType;
 
-        if (propertyType == typeof(string))
+        if (propertyType == typeof(string) && property.Name != nameof(IDocument.UniqueKey))
         {
             property.SetValue(instance, fieldValue);
         }
