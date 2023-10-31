@@ -1,7 +1,11 @@
+using FullTextSearchDemo.SearchEngine.Models;
+
 namespace FullTextSearchDemo.Models;
 
-public class Product
+public class Product : IDocument
 {
+    public string UniqueKey => Id.ToString();
+    
     public int Id { get; set; }
     
     public required string Name { get; set; }

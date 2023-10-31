@@ -19,21 +19,21 @@ public class SearchEngineForPostsTests
     [SetUp]
     public void Setup()
     {
-        _documentWriter.WriteDocument(new Post
+        _documentWriter.AddDocument(new Post
         {
             Id = 1,
             Title = Title,
             Content = "<h1>Fox</h1>"
         });
 
-        _documentWriter.WriteDocument(new Post
+        _documentWriter.AddDocument(new Post
         {
             Id = 2,
             Title = "Just another post about Search Engines",
             Content = "<h1>Solr rocks!</h1>"
         });
 
-        _documentWriter.WriteDocument(new Post
+        _documentWriter.AddDocument(new Post
         {
             Id = 2,
             Title = "Search is cool with Apache Lucene.NET",
@@ -51,6 +51,55 @@ public class SearchEngineForPostsTests
     }
 
     [Test]
+    public void Remove_ExistingDocument_DocumentIsRemoved()
+    {
+        var toDelete = new Post
+        {
+            Id = 1,
+            Title = Title,
+            Content = "<h1>Fox</h1>"
+        };
+
+        _searchEngine.Remove(toDelete);
+        
+        var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
+        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
+
+        var result = searchEngine.Search(query).ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Has.Count.EqualTo(0));
+        });
+    }
+    
+    [Test]
+    public void Update_ExistingDocument_DocumentIsUpdated()
+    {
+        var toUpdate = new Post
+        {
+            Id = 1,
+            Title = "Updated title",
+            Content = "<h1>Fox</h1>"
+        };
+
+        _searchEngine.Update(toUpdate);
+        
+        var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
+        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
+
+        var result = searchEngine.Search(query).ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].Id, Is.EqualTo(1));
+            Assert.That(result[0].Title, Is.EqualTo("Updated title"));
+            Assert.That(result[0].Content, Is.EqualTo("<h1>Fox</h1>"));
+        });
+    }
+
+    [Test]
     public void Search_AllFieldQueryExactSearchWithCorrectTerm_ReturnsPost()
     {
         var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
@@ -60,6 +109,7 @@ public class SearchEngineForPostsTests
         Assert.Multiple(() =>
         {
             Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].UniqueKey, Is.EqualTo("1"));
             Assert.That(result[0].Id, Is.EqualTo(1));
             Assert.That(result[0].Title, Is.EqualTo(Title));
         });

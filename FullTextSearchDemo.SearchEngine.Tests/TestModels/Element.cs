@@ -1,7 +1,11 @@
+using FullTextSearchDemo.SearchEngine.Models;
+
 namespace FullTextSearchDemo.SearchEngine.Tests.TestModels;
 
-public class Element
+public class Element : IDocument
 {
+    public string UniqueKey { get; set; }
+    
     public bool BooleanProperty { get; set; }
     public byte ByteProperty { get; set; }
     public sbyte SByteProperty { get; set; }
