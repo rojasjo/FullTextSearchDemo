@@ -1,4 +1,4 @@
-using FullTextSearchDemo.SearchEngine.Configuration;
+using FullTextSearchDemo.SearchEngine.Engine;
 using FullTextSearchDemo.SearchEngine.Models;
 using FullTextSearchDemo.SearchEngine.Services;
 using FullTextSearchDemo.SearchEngine.Tests.TestModels;
@@ -7,41 +7,47 @@ namespace FullTextSearchDemo.SearchEngine.Tests;
 
 public class SearchEngineForPostsTests
 {
-    private Engine.SearchEngine<Post> _searchEngine = null!;
+    private SearchEngine<Post> _searchEngine = null!;
     private const string Title = "Testing Apache Lucene.NET - Ensuring robust search functionality in C#";
+    private readonly DocumentWriter<Post> _documentWriter;
+
+    public SearchEngineForPostsTests()
+    {
+        _documentWriter = new DocumentWriter<Post>(new PostTestConfiguration());
+    }
 
     [SetUp]
     public void Setup()
     {
-        _searchEngine = new Engine.SearchEngine<Post>(new DocumentFactory<Post>(new PostTestConfiguration()));
-
-        _searchEngine.Add(new Post
+        _documentWriter.WriteDocument(new Post
         {
             Id = 1,
             Title = Title,
             Content = "<h1>Fox</h1>"
         });
 
-        _searchEngine.Add(new Post
+        _documentWriter.WriteDocument(new Post
         {
             Id = 2,
             Title = "Just another post about Search Engines",
             Content = "<h1>Solr rocks!</h1>"
         });
 
-        _searchEngine.Add(new Post
+        _documentWriter.WriteDocument(new Post
         {
             Id = 2,
             Title = "Search is cool with Apache Lucene.NET",
             Content = "<h1>Apache Lucene at the core!</h1>"
         });
+
+        _searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
     }
 
     [TearDown]
     public void TearDown()
     {
-        DocumentWriter<Post>.Instance.Writer.DeleteAll();
-        DocumentWriter<Post>.Instance.Writer.Commit();
+        _documentWriter.Writer.DeleteAll();
+        _documentWriter.Writer.Commit();
     }
 
     [Test]
@@ -101,7 +107,7 @@ public class SearchEngineForPostsTests
 
         Assert.That(result, Has.Count.EqualTo(expectedPosts));
     }
-    
+
     [Test]
     [TestCase("Testing", 1)]
     [TestCase("testIng", 1)]
@@ -113,19 +119,13 @@ public class SearchEngineForPostsTests
     public void Search_OnlyTitleQueryFuzzySearchWithCorrectTerm_ReturnsAllPost(string search, int expected)
     {
         var query = new FieldSpecificSearchQuery
-        {
-            SearchTerms = new Dictionary<string, string>()
-            {
-                { "Title", search }
-            },
-            Type = SearchType.FuzzyMatch
-        };
+            { SearchTerms = new Dictionary<string, string?> { { "Title", search } }, Type = SearchType.FuzzyMatch };
 
         var result = _searchEngine.Search(query).ToList();
 
         Assert.That(result, Has.Count.EqualTo(expected));
     }
-    
+
     [Test]
     [TestCase("Testing", 0)]
     [TestCase("testIng", 0)]
@@ -140,17 +140,10 @@ public class SearchEngineForPostsTests
     public void Search_OnlyTitleQueryExactSearchWithCorrectTerm_ReturnsAllPost(string search, int expected)
     {
         var query = new FieldSpecificSearchQuery
-        {
-            SearchTerms = new Dictionary<string, string>()
-            {
-                { "Title", search }
-            },
-            Type = SearchType.ExactMatch
-        };
+            { SearchTerms = new Dictionary<string, string?> { { "Title", search } }, Type = SearchType.ExactMatch };
 
         var result = _searchEngine.Search(query).ToList();
 
         Assert.That(result, Has.Count.EqualTo(expected));
     }
-    
 }

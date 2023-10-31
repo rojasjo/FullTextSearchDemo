@@ -1,4 +1,3 @@
-using FullTextSearchDemo.SearchEngine.Configuration;
 using FullTextSearchDemo.SearchEngine.Helpers;
 using FullTextSearchDemo.SearchEngine.Models;
 using Lucene.Net.Index;
@@ -7,23 +6,23 @@ using LuceneDirectory = Lucene.Net.Store.Directory;
 
 namespace FullTextSearchDemo.SearchEngine.Services;
 
-internal sealed class DocumentReader : IDocumentReader
+internal sealed class DocumentReader<T> : IDocumentReader<T> where T : class
 {
     private readonly IndexSearcher _searcher;
 
-    public DocumentReader(IndexReader directoryReader)
+    public DocumentReader(IDocumentWriter<T> documentWriter)
     {
-        _searcher = new IndexSearcher(directoryReader);
+        var reader = documentWriter.Writer.GetReader(true);
+        _searcher = new IndexSearcher(reader);
     }
 
-    public IEnumerable<T> Search<T>(FieldSpecificSearchQuery searchQuery) where T : class
+    public IEnumerable<T> Search(FieldSpecificSearchQuery searchQuery)
     {
-        var query = ConstructQuery<T>(searchQuery.SearchTerms, searchQuery.Type);
-
-        return PerformSearch<T>(query, searchQuery.PageNumber, searchQuery.PageSize);
+        var query = ConstructQuery(searchQuery.SearchTerms, searchQuery.Type);
+        return PerformSearch(query, searchQuery.PageNumber, searchQuery.PageSize);
     }
 
-    public IEnumerable<T> Search<T>(AllFieldsSearchQuery searchQuery) where T : class
+    public IEnumerable<T> Search(AllFieldsSearchQuery searchQuery)
     {
         var instance = Activator.CreateInstance<T>();
 
@@ -32,14 +31,14 @@ internal sealed class DocumentReader : IDocumentReader
             .Select(fieldName => new { fieldName, type = instance.GetType().GetProperty(fieldName)?.PropertyType })
             .Where(t => t.type != null)
             .Where(t => t.type == string.Empty.GetType())
-            .Select(t => t.fieldName).ToDictionary(fieldName => fieldName, fieldName => searchQuery.SearchTerm);
+            .Select(t => t.fieldName).ToDictionary(fieldName => fieldName, _ => searchQuery.SearchTerm);
 
-        var query = ConstructQuery<T>(searchDictionary, searchQuery.Type);
+        var query = ConstructQuery(searchDictionary, searchQuery.Type);
 
-        return PerformSearch<T>(query, searchQuery.PageNumber, searchQuery.PageSize);
+        return PerformSearch(query, searchQuery.PageNumber, searchQuery.PageSize);
     }
 
-    private IEnumerable<T> PerformSearch<T>(Query query, int pageNumber, int pageSize) where T : class
+    private IEnumerable<T> PerformSearch(Query query, int pageNumber, int pageSize)
     {
         var scoredDocs = _searcher.Search(query, int.MaxValue).ScoreDocs;
 
@@ -50,13 +49,12 @@ internal sealed class DocumentReader : IDocumentReader
         {
             return Enumerable.Empty<T>();
         }
-        
+
         return scoredDocs[start..end].Select(hit => _searcher.Doc(hit.Doc)).Select(d => d.ConvertToObjectOfType<T>())
             .ToList();
     }
 
-    private static Query ConstructQuery<T>(IDictionary<string, string>? searchFiles, SearchType searchType)
-        where T : class
+    private static Query ConstructQuery(IDictionary<string, string?>? searchFiles, SearchType searchType)
     {
         if (searchFiles == null || searchFiles.Count == 0)
         {

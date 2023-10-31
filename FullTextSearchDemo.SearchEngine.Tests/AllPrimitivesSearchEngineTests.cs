@@ -1,4 +1,3 @@
-using FullTextSearchDemo.SearchEngine.Configuration;
 using FullTextSearchDemo.SearchEngine.Engine;
 using FullTextSearchDemo.SearchEngine.Models;
 using FullTextSearchDemo.SearchEngine.Services;
@@ -9,17 +8,19 @@ namespace FullTextSearchDemo.SearchEngine.Tests;
 public class SearchEngineForElementsTests
 {
     private SearchEngine<Element> _searchEngine = null!;
+    private readonly DocumentWriter<Element> _documentWriter;
+
+    public SearchEngineForElementsTests()
+    {
+        _documentWriter = new DocumentWriter<Element>(new AllPrimitiveConfiguration());
+    }
 
     [SetUp]
     public void Setup()
     {
-        _searchEngine =
-            new SearchEngine<Element>(
-                new DocumentFactory<Element>(new AllPrimitiveConfiguration()));
+        _documentWriter.WriteDocument(new Element());
 
-        _searchEngine.Add(new Element());
-
-        _searchEngine.Add(new Element
+        _documentWriter.WriteDocument(new Element
         {
             BooleanProperty = true,
             ByteProperty = 5,
@@ -31,14 +32,14 @@ public class SearchEngineForElementsTests
             Int32Property = 42,
             UInt32Property = 100,
             IntPtrProperty = 42,
-            UIntPtrProperty = 100, 
+            UIntPtrProperty = 100,
             Int64Property = 1234567890,
             UInt64Property = 9876543210,
             Int16Property = 32767,
             UInt16Property = 65535
         });
 
-        _searchEngine.Add(new Element
+        _documentWriter.WriteDocument(new Element
         {
             BooleanProperty = true,
             ByteProperty = 1,
@@ -56,13 +57,15 @@ public class SearchEngineForElementsTests
             Int16Property = 1,
             UInt16Property = 1
         });
+        
+        _searchEngine = new SearchEngine<Element>(new DocumentReader<Element>(_documentWriter), _documentWriter);
     }
 
     [TearDown]
     public void TearDown()
     {
-        DocumentWriter<Element>.Instance.Writer.DeleteAll();
-        DocumentWriter<Element>.Instance.Writer.Commit();
+        _documentWriter.Writer.DeleteAll();
+        _documentWriter.Writer.Commit();
     }
 
     [Test]
@@ -73,13 +76,14 @@ public class SearchEngineForElementsTests
     [TestCase("A")]
     public void Search_ExactSearchWithCorrectTerm_ReturnsAllElements(string search)
     {
+        
         var result = _searchEngine.Search(new AllFieldsSearchQuery
             { SearchTerm = search, Type = SearchType.ExactMatch }).ToList();
 
 
         Assert.That(result, Has.Count.EqualTo(3));
     }
-    
+
     [Test]
     [TestCase(SearchType.ExactMatch)]
     [TestCase(SearchType.FuzzyMatch)]

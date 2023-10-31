@@ -4,5 +4,5 @@ public enum SearchType
 {
     FuzzyMatch,
     ExactMatch,
-    PrefixMatch,
+    PrefixMatch
 }
