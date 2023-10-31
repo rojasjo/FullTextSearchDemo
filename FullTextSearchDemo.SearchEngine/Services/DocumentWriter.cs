@@ -1,3 +1,4 @@
+using FullTextSearchDemo.SearchEngine.Configuration;
 using FullTextSearchDemo.SearchEngine.Helpers;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
@@ -11,27 +12,21 @@ namespace FullTextSearchDemo.SearchEngine.Services;
 
 internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : class
 {
-    private static readonly Lazy<DocumentWriter<T>> DocumentWriterInstance = new(() => new DocumentWriter<T>());
-
-    public static DocumentWriter<T> Instance => DocumentWriterInstance.Value;
-
-    /// <summary>
-    /// We need to set the index name before we can use the document writer.
-    /// This static property is not shared between instances of the document writer for different types.
-    /// </summary>
-    public static string? Index { get; set; }
+    private readonly string _index;
 
     public IndexWriter Writer { get; }
 
-    private DocumentWriter()
+    public DocumentWriter(IIndexConfiguration<T> configuration)
     {
-        if (string.IsNullOrWhiteSpace(Index))
+        if (string.IsNullOrWhiteSpace(configuration.IndexName))
         {
             throw new ArgumentException("Index name must be set before using DocumentWriter.");
         }
 
+        _index = configuration.IndexName;
+        
         // Open the index directory
-        var indexPath = Path.Combine(Environment.CurrentDirectory, Index);
+        var indexPath = Path.Combine(Environment.CurrentDirectory, _index);
         LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
         // Create an analyzer to process the text

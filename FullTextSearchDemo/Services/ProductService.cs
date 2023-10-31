@@ -16,7 +16,7 @@ public class ProductService : IProductService
 
     public IEnumerable<Product> GetProducts(GetProductsQuery query)
     {
-        var searchTerm = new Dictionary<string, string>();
+        var searchTerm = new Dictionary<string, string?>();
         
         if (!string.IsNullOrWhiteSpace(query.Name))
         {

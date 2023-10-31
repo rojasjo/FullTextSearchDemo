@@ -1,8 +1,6 @@
 using System.Dynamic;
 using FullTextSearchDemo.SearchEngine.Configuration;
 using FullTextSearchDemo.SearchEngine.Services;
-using FullTextSearchDemo.SearchEngine.Engine;
-using FullTextSearchDemo.SearchEngine.Tests.TestModels;
 
 namespace FullTextSearchDemo.SearchEngine.Tests;
 
@@ -21,6 +19,6 @@ public class DocumentWriterTests
         dynamicObject.FirstName = "John";
         dynamicObject.LastName = "Doe";
 
-        Assert.Throws<ArgumentException>(() => DocumentWriter<object>.Instance.WriteDocument(dynamicObject));
+        Assert.Throws<ArgumentException>(() => _ = new DocumentWriter<object>(new WrongConfiguration()));
     }
 }

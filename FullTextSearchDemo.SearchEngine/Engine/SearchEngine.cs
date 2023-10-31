@@ -8,28 +8,27 @@ namespace FullTextSearchDemo.SearchEngine.Engine;
 
 internal class SearchEngine<T> : ISearchEngine<T> where T : class
 {
-    private readonly IDocumentFactory<T> _documentFactory;
-
-    public SearchEngine(IDocumentFactory<T> documentFactory)
+    private readonly IDocumentReader<T> _documentReader;
+    private readonly IDocumentWriter<T> _documentWriter;
+    
+    public SearchEngine(IDocumentReader<T> documentReader, IDocumentWriter<T> documentWriter)
     {
-        _documentFactory = documentFactory;
+        _documentReader = documentReader;
+        _documentWriter = documentWriter;
     }
 
     public IEnumerable<T> Search(FieldSpecificSearchQuery searchQuery)
     {
-        var documentReader = _documentFactory.CreateDocumentReader();
-        return documentReader.Search<T>(searchQuery);
+        return _documentReader.Search(searchQuery);
     }
 
     public IEnumerable<T> Search(AllFieldsSearchQuery searchQuery)
     {
-        var documentReader = _documentFactory.CreateDocumentReader();
-        return documentReader.Search<T>(searchQuery);
+        return _documentReader.Search(searchQuery);
     }
 
     public void Add(T document)
     {
-        var documentWriter = _documentFactory.CreateDocumentWriter();
-        documentWriter.WriteDocument(document);
+        _documentWriter.WriteDocument(document);
     }
 }

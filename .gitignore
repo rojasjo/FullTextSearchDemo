@@ -403,3 +403,11 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# Ignore Lucene index files
+*.cfe
+*.cfs
+*.si
+*write.lock
+*.gen
+*segments_*
