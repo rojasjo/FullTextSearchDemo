@@ -3,22 +3,29 @@ namespace FullTextSearchDemo.SearchEngine.Models;
 public abstract class SearchQuery
 {
     private const int DefaultPageSize = 10;
-
-    public SearchType Type { get; set; }
-
-    private int _pageNumber;
-
+    private readonly int _pageSize = DefaultPageSize;
+    private readonly int _pageNumber;
+    
+    /// <summary>
+    /// The type of search query.
+    /// </summary>
+    public SearchType Type { get; init; }
+    
+    /// <summary>
+    /// The page number for the search query.
+    /// </summary>
     public int PageNumber
     {
         get => _pageNumber;
-        set => _pageNumber = value < 0 ? 0 : value;
+        init => _pageNumber = value < 0 ? 0 : value;
     }
-
-    private int _pageSize = DefaultPageSize;
-
+    
+    /// <summary>
+    /// The page size for the search query.
+    /// </summary>
     public int PageSize
     {
         get => _pageSize;
-        set => _pageSize = value <= 0 ? DefaultPageSize : value;
+        init => _pageSize = value <= 0 ? DefaultPageSize : value;
     }
 }

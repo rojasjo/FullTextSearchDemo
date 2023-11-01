@@ -1,14 +1,33 @@
 namespace FullTextSearchDemo.SearchEngine.Models;
 
+/// <summary>
+/// Represents the result of a search query, including a list of items, page-related information,
+/// and total item count.
+/// </summary>
 public class SearchResult<T> where T : IDocument
 {
-    public IEnumerable<T> Items { get; set; }
+    /// <summary>
+    /// The list of items found by the search query.
+    /// </summary>
+    public IEnumerable<T> Items { get; init; }
+    
+    /// <summary>
+    /// The page number from which the items are retrieved.
+    /// </summary>
+    public int PageNumber { get; init; }
 
-    public int PageNumber { get; set; }
+    /// <summary>
+    /// The number of items contained on each page.
+    /// </summary>
+    public int PageSize { get; init; }
 
-    public int PageSize { get; set; }
+    /// <summary>
+    /// The total count of items that match the search query.
+    /// </summary>
+    public int TotalItems { get; init; }
 
-    public int TotalItems { get; set; }
-
+    /// <summary>
+    /// The total number of pages based on the total item count and page size.
+    /// </summary>
     public int TotalPages => (int)Math.Ceiling(TotalItems / (double)PageSize);
 }
