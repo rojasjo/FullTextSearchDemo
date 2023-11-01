@@ -32,12 +32,12 @@ internal class SearchEngine<T> : ISearchEngine<T> where T : IDocument
         _documentWriter.RemoveDocument(document);
     }
 
-    public IEnumerable<T> Search(FieldSpecificSearchQuery searchQuery)
+    public SearchResult<T> Search(FieldSpecificSearchQuery searchQuery)
     {
         return _documentReader.Search(searchQuery);
     }
 
-    public IEnumerable<T> Search(AllFieldsSearchQuery searchQuery)
+    public SearchResult<T> Search(AllFieldsSearchQuery searchQuery)
     {
         return _documentReader.Search(searchQuery);
     }

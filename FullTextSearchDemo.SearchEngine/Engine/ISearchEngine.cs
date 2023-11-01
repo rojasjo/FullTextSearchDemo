@@ -10,7 +10,7 @@ public interface ISearchEngine<T> where T : IDocument
 
     void Remove(T document);
     
-    public IEnumerable<T> Search(FieldSpecificSearchQuery searchQuery);
+    public SearchResult<T> Search(FieldSpecificSearchQuery searchQuery);
     
-    public IEnumerable<T> Search(AllFieldsSearchQuery searchQuery);
+    public SearchResult<T> Search(AllFieldsSearchQuery searchQuery);
 }

@@ -14,7 +14,7 @@ public class ProductService : IProductService
         _searchEngine = searchEngine;
     }
 
-    public IEnumerable<Product> GetProducts(GetProductsQuery query)
+    public SearchResult<Product> GetProducts(GetProductsQuery query)
     {
         var searchTerm = new Dictionary<string, string?>();
 
@@ -39,7 +39,7 @@ public class ProductService : IProductService
         return _searchEngine.Search(searchQuery);
     }
 
-    public IEnumerable<Product> SearchProducts(ProductsSearchQuery query)
+    public SearchResult<Product> SearchProducts(ProductsSearchQuery query)
     {
         var searchQuery = new AllFieldsSearchQuery
         {
