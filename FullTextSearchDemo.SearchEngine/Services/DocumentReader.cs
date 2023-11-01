@@ -44,27 +44,27 @@ internal sealed class DocumentReader<T> : IDocumentReader<T> where T : IDocument
         var searchTopDocs = _searcher.Search(query, int.MaxValue);
         var documents = searchTopDocs.ScoreDocs;
 
-        var result = new SearchResult<T>
+        var start = pageNumber * pageSize;
+        var end = Math.Min(start + pageSize, documents.Length);
+
+        IEnumerable<T> items;
+        if (start > end)
         {
+            items = Enumerable.Empty<T>();
+        }
+        else
+        {
+            items = documents[start..end].Select(hit => _searcher.Doc(hit.Doc))
+                .Select(d => d.ConvertToObjectOfType<T>());
+        }
+
+        return new SearchResult<T>
+        {
+            Items = items,
             PageNumber = pageNumber,
             PageSize = pageSize,
             TotalItems = searchTopDocs.TotalHits
         };
-
-        var start = pageNumber * pageSize;
-        var end = Math.Min(start + pageSize, documents.Length);
-
-        if (start > end)
-        {
-            result.Items = Enumerable.Empty<T>();
-        }
-        else
-        {
-            result.Items = documents[start..end].Select(hit => _searcher.Doc(hit.Doc))
-                .Select(d => d.ConvertToObjectOfType<T>());
-        }
-
-        return result;
     }
 
     private static Query ConstructQuery(IDictionary<string, string?>? searchFiles, SearchType searchType)
