@@ -61,18 +61,15 @@ public class SearchEngineForPostsTests
         };
 
         _searchEngine.Remove(toDelete);
-        
+
         var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
         var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
 
-        var result = searchEngine.Search(query).ToList();
+        var result = searchEngine.Search(query).Items.ToList();
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Has.Count.EqualTo(0));
-        });
+        Assert.Multiple(() => { Assert.That(result, Has.Count.EqualTo(0)); });
     }
-    
+
     [Test]
     public void Update_ExistingDocument_DocumentIsUpdated()
     {
@@ -84,11 +81,11 @@ public class SearchEngineForPostsTests
         };
 
         _searchEngine.Update(toUpdate);
-        
+
         var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
         var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
 
-        var result = searchEngine.Search(query).ToList();
+        var result = searchEngine.Search(query).Items.ToList();
 
         Assert.Multiple(() =>
         {
@@ -104,7 +101,7 @@ public class SearchEngineForPostsTests
     {
         var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
 
-        var result = _searchEngine.Search(query).ToList();
+        var result = _searchEngine.Search(query).Items.ToList();
 
         Assert.Multiple(() =>
         {
@@ -122,7 +119,7 @@ public class SearchEngineForPostsTests
 
         var result = _searchEngine.Search(query);
 
-        Assert.That(result.Count(), Is.EqualTo(0));
+        Assert.That(result.Items.Count(), Is.EqualTo(0));
     }
 
     [Test]
@@ -133,9 +130,9 @@ public class SearchEngineForPostsTests
     {
         var query = new AllFieldsSearchQuery { Type = searchType };
 
-        var result = _searchEngine.Search(query).ToList();
+        var result = _searchEngine.Search(query);
 
-        Assert.That(result, Has.Count.EqualTo(3));
+        Assert.That(result.Items.Count(), Is.EqualTo(3));
     }
 
     [Test]
@@ -153,9 +150,9 @@ public class SearchEngineForPostsTests
         var query = new AllFieldsSearchQuery
             { Type = SearchType.ExactMatch, PageNumber = pageNumber, PageSize = pageSize };
 
-        var result = _searchEngine.Search(query).ToList();
+        var result = _searchEngine.Search(query);
 
-        Assert.That(result, Has.Count.EqualTo(expectedPosts));
+        Assert.That(result.Items.Count(), Is.EqualTo(expectedPosts));
     }
 
     [Test]
@@ -171,9 +168,9 @@ public class SearchEngineForPostsTests
         var query = new FieldSpecificSearchQuery
             { SearchTerms = new Dictionary<string, string?> { { "Title", search } }, Type = SearchType.FuzzyMatch };
 
-        var result = _searchEngine.Search(query).ToList();
+        var result = _searchEngine.Search(query);
 
-        Assert.That(result, Has.Count.EqualTo(expected));
+        Assert.That(result.Items.Count(), Is.EqualTo(expected));
     }
 
     [Test]
@@ -192,8 +189,52 @@ public class SearchEngineForPostsTests
         var query = new FieldSpecificSearchQuery
             { SearchTerms = new Dictionary<string, string?> { { "Title", search } }, Type = SearchType.ExactMatch };
 
-        var result = _searchEngine.Search(query).ToList();
+        var result = _searchEngine.Search(query);
 
-        Assert.That(result, Has.Count.EqualTo(expected));
+        Assert.That(result.Items.Count(), Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Search_AllFieldQueryWithPageSizeOne_HasThreePages()
+    {
+        var query = new AllFieldsSearchQuery { PageSize = 1 };
+
+        var result = _searchEngine.Search(query);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Items.Count(), Is.EqualTo(1));
+            Assert.That(result.TotalItems, Is.EqualTo(3));
+            Assert.That(result.TotalPages, Is.EqualTo(3));
+            Assert.That(result.PageNumber, Is.EqualTo(0));
+        });
+    }
+
+    [Test]
+    public void Search_AllFieldQueryWithPageSizeLessThan1_SetPageSizeTo10()
+    {
+        var query = new AllFieldsSearchQuery { PageSize = 0 };
+
+        var result = _searchEngine.Search(query);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Items.Count(), Is.EqualTo(3));
+            Assert.That(result.TotalItems, Is.EqualTo(3));
+            Assert.That(result.TotalPages, Is.EqualTo(1));
+            Assert.That(result.PageNumber, Is.EqualTo(0));
+        });
+    }
+
+    [Test]
+    [TestCase(5, 5)]
+    [TestCase(-5, 0)]
+    public void Search_AllFieldQueryWithInvalidPageNumber_PageNumberIsNotChanged(int pageNumber, int expectedPageNumber)
+    {
+        var query = new AllFieldsSearchQuery { PageNumber = pageNumber };
+
+        var result = _searchEngine.Search(query);
+
+        Assert.That(result.PageNumber, Is.EqualTo(expectedPageNumber));
     }
 }
