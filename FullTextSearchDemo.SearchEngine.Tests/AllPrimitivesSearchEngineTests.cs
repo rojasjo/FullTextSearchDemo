@@ -77,7 +77,7 @@ public class SearchEngineForElementsTests
     public void Search_ExactSearchWithCorrectTerm_ReturnsAllElements(string search)
     {
         var result = _searchEngine.Search(new AllFieldsSearchQuery
-            { SearchTerm = search, Type = SearchType.ExactMatch }).ToList();
+            { SearchTerm = search, Type = SearchType.ExactMatch }).Items.ToList();
         
         Assert.That(result, Has.Count.EqualTo(3));
     }
@@ -89,7 +89,7 @@ public class SearchEngineForElementsTests
     public void Search_ExactSearchWithEmptyTerm_ReturnsAllPosts(SearchType searchType)
     {
         var result = _searchEngine.Search(new AllFieldsSearchQuery
-            { Type = searchType }).ToList();
+            { Type = searchType }).Items.ToList();
 
         Assert.That(result, Has.Count.EqualTo(3));
     }
@@ -106,7 +106,7 @@ public class SearchEngineForElementsTests
     public void Search_WithEmptyTermWithPagination_ReturnsTowPosts(int pageNumber, int pageSize, int expectedPosts)
     {
         var result = _searchEngine.Search(new AllFieldsSearchQuery
-            { Type = SearchType.ExactMatch, PageNumber = pageNumber, PageSize = pageSize }).ToList();
+            { Type = SearchType.ExactMatch, PageNumber = pageNumber, PageSize = pageSize }).Items.ToList();
 
         Assert.That(result, Has.Count.EqualTo(expectedPosts));
     }

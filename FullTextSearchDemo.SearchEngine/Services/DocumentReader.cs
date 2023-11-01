@@ -16,13 +16,13 @@ internal sealed class DocumentReader<T> : IDocumentReader<T> where T : IDocument
         _searcher = new IndexSearcher(reader);
     }
 
-    public IEnumerable<T> Search(FieldSpecificSearchQuery searchQuery)
+    public SearchResult<T> Search(FieldSpecificSearchQuery searchQuery)
     {
         var query = ConstructQuery(searchQuery.SearchTerms, searchQuery.Type);
         return PerformSearch(query, searchQuery.PageNumber, searchQuery.PageSize);
     }
 
-    public IEnumerable<T> Search(AllFieldsSearchQuery searchQuery)
+    public SearchResult<T> Search(AllFieldsSearchQuery searchQuery)
     {
         var instance = Activator.CreateInstance<T>();
 
@@ -39,20 +39,32 @@ internal sealed class DocumentReader<T> : IDocumentReader<T> where T : IDocument
         return PerformSearch(query, searchQuery.PageNumber, searchQuery.PageSize);
     }
 
-    private IEnumerable<T> PerformSearch(Query query, int pageNumber, int pageSize)
+    private SearchResult<T> PerformSearch(Query query, int pageNumber, int pageSize)
     {
-        var scoredDocs = _searcher.Search(query, int.MaxValue).ScoreDocs;
+        var searchTopDocs = _searcher.Search(query, int.MaxValue);
+        var documents = searchTopDocs.ScoreDocs;
+
+        var result = new SearchResult<T>
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalItems = searchTopDocs.TotalHits
+        };
 
         var start = pageNumber * pageSize;
-        var end = Math.Min(start + pageSize, scoredDocs.Length);
+        var end = Math.Min(start + pageSize, documents.Length);
 
         if (start > end)
         {
-            return Enumerable.Empty<T>();
+            result.Items = Enumerable.Empty<T>();
+        }
+        else
+        {
+            result.Items = documents[start..end].Select(hit => _searcher.Doc(hit.Doc))
+                .Select(d => d.ConvertToObjectOfType<T>());
         }
 
-        return scoredDocs[start..end].Select(hit => _searcher.Doc(hit.Doc)).Select(d => d.ConvertToObjectOfType<T>())
-            .ToList();
+        return result;
     }
 
     private static Query ConstructQuery(IDictionary<string, string?>? searchFiles, SearchType searchType)
@@ -78,12 +90,12 @@ internal sealed class DocumentReader<T> : IDocumentReader<T> where T : IDocument
                 continue;
             }
 
-            Query? searchQuery = searchType switch
+            Query searchQuery = searchType switch
             {
                 SearchType.ExactMatch => new TermQuery(new Term(fieldName, value)),
                 SearchType.PrefixMatch => new PrefixQuery(new Term(fieldName, value)),
                 SearchType.FuzzyMatch => new FuzzyQuery(new Term(fieldName, value)),
-                _ => null
+                _ => new TermQuery(new Term(fieldName, value))
             };
 
             query.Add(searchQuery, Occur.SHOULD);
