@@ -4,7 +4,7 @@ using Lucene.Net.Documents;
 
 namespace FullTextSearchDemo.SearchEngine.Helpers;
 
-public static class GenericDocumentExtensions
+internal static class DocumentConverterExtensions
 {
     /// <summary>
     /// Reconstructs a generic object from a Lucene document.
@@ -13,7 +13,7 @@ public static class GenericDocumentExtensions
     /// <param name="document"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static T ConvertToObjectOfType<T>(this Document document) where T : IDocument
+    internal static T ConvertToObjectOfType<T>(this Document document) where T : IDocument
     {
         var instance = Activator.CreateInstance<T>();
 
@@ -40,7 +40,7 @@ public static class GenericDocumentExtensions
     /// <param name="instance"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static Document ConvertToDocument<T>(this T instance) where T : IDocument
+    internal static Document ConvertToDocument<T>(this T instance) where T : IDocument
     {
         var document = new Document();
 

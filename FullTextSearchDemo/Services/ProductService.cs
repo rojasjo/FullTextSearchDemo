@@ -1,7 +1,9 @@
 using FullTextSearchDemo.Models;
 using FullTextSearchDemo.Parameters;
+using FullTextSearchDemo.SearchEngine;
 using FullTextSearchDemo.SearchEngine.Engine;
-using FullTextSearchDemo.SearchEngine.Models;
+using FullTextSearchDemo.SearchEngine.Queries;
+using FullTextSearchDemo.SearchEngine.Results;
 
 namespace FullTextSearchDemo.Services;
 
@@ -72,5 +74,15 @@ public class ProductService : IProductService
         };
 
         _searchEngine.Remove(product);
+    }
+
+    public SearchResult<Product> FullSearchProducts(ProductsSearchQuery query)
+    {
+        return _searchEngine.Search(new FullTextSearchQuery
+        {
+            SearchTerm = query.Search,
+            PageNumber = query.PageNumber,
+            PageSize = query.PageSize
+        });
     }
 }

@@ -1,15 +1,10 @@
-namespace FullTextSearchDemo.SearchEngine.Models;
+namespace FullTextSearchDemo.SearchEngine.Queries;
 
 public abstract class SearchQuery
 {
     private const int DefaultPageSize = 10;
     private readonly int _pageSize = DefaultPageSize;
     private readonly int _pageNumber;
-    
-    /// <summary>
-    /// The type of search query.
-    /// </summary>
-    public SearchType Type { get; init; }
     
     /// <summary>
     /// The page number for the search query.

@@ -1,4 +1,6 @@
-namespace FullTextSearchDemo.SearchEngine.Models;
+using FullTextSearchDemo.SearchEngine.Models;
+
+namespace FullTextSearchDemo.SearchEngine.Results;
 
 /// <summary>
 /// Represents the result of a search query, including a list of items, page-related information,

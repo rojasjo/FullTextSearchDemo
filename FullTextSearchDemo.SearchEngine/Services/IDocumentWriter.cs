@@ -12,4 +12,8 @@ internal interface IDocumentWriter<in T> where T : IDocument
     void RemoveDocument(T generic);
     
     IndexWriter Writer { get; }
+    
+    void Clear();
+
+    void AddDocuments(IEnumerable<T> documents);
 }

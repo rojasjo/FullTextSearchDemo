@@ -43,6 +43,20 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Error: {ex.Message}");
         }
     }
+    
+    [HttpGet("fulltextsearch")]
+    public IActionResult FullTextSearchProducts([FromQuery] ProductsSearchQuery query)
+    {
+        try
+        {
+            var result = _productService.FullSearchProducts(query);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error: {ex.Message}");
+        }
+    }
 
     [HttpPost]
     public IActionResult PostProduct([FromBody] Product product)

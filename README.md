@@ -61,7 +61,7 @@ var app = builder.Build();
 
 #### Adding documents
 
-To add a document to the search engine, use the Add method.
+To add a single document to the search engine, use the Add method.
 
 ```csharp
 var newProduct = new Product
@@ -72,6 +72,17 @@ var newProduct = new Product
 };
 
 _searchEngine.Add(newProduct);
+
+```
+
+The AddRange method is designed to add a collection of documents:
+
+```csharp
+var products = new List<Product>();
+
+// Add items to the list
+
+ _searchEngine.AddRange(products);
 
 ```
 
@@ -93,7 +104,7 @@ _searchEngine.Update(updatedProduct);
 
 #### Deleting a Document
 
-To remove a document from the search engine, use the Remove method providing the document.
+To remove a single document from the search engine, use the Remove method providing the document.
 
 ```csharp
   var product = new Product
@@ -103,6 +114,14 @@ To remove a document from the search engine, use the Remove method providing the
         };
 
   _searchEngine.Remove(product);
+  
+```
+
+If you desire to remove all documents from the index you can use the Clear method.
+
+```csharp
+ 
+  _searchEngine.Clear();
   
 ```
 
@@ -150,7 +169,7 @@ Copyright 2023 José Rojas Jimenez
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+You may obtain a copy of th*.doce License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 

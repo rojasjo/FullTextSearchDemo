@@ -1,5 +1,6 @@
 using FullTextSearchDemo.SearchEngine.Engine;
 using FullTextSearchDemo.SearchEngine.Models;
+using FullTextSearchDemo.SearchEngine.Queries;
 using FullTextSearchDemo.SearchEngine.Services;
 using FullTextSearchDemo.SearchEngine.Tests.TestModels;
 

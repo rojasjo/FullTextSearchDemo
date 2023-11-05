@@ -404,6 +404,10 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
+# Ignore Data files
+
+**/data/*tsv
+
 # Ignore Lucene index files
 *.cfe
 *.cfs
@@ -411,3 +415,12 @@ ASALocalRun/
 *write.lock
 *.gen
 *segments_*
+*.fdt
+*.fdx
+*.fnm
+*.nvd
+*.nvm
+*.doc
+*.pos
+*.tim
+*.tip
