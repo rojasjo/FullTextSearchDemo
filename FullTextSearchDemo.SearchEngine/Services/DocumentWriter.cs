@@ -13,7 +13,7 @@ namespace FullTextSearchDemo.SearchEngine.Services;
 internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : IDocument
 {
     public IndexWriter Writer { get; }
-
+    
     public DocumentWriter(IIndexConfiguration<T> configuration)
     {
         if (string.IsNullOrWhiteSpace(configuration.IndexName))
@@ -41,6 +41,23 @@ internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : IDocument
     {
         var document = generic.ConvertToDocument();
         Writer.AddDocument(document);
+        Writer.Commit();
+    }
+
+    public void Clear()
+    {
+        Writer.DeleteAll();
+        Writer.Commit();
+    }
+
+    public void AddDocuments(IEnumerable<T> documents)
+    {
+        foreach (var generic in documents)
+        {
+            var document = generic.ConvertToDocument();
+            Writer.AddDocument(document);
+        }
+        
         Writer.Commit();
     }
 

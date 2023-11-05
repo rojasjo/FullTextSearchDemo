@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using FullTextSearchDemo.SearchEngine.Models;
+using FullTextSearchDemo.SearchEngine.Queries;
+using FullTextSearchDemo.SearchEngine.Results;
 using FullTextSearchDemo.SearchEngine.Services;
 
 [assembly: InternalsVisibleTo("FullTextSearchDemo.SearchEngine.Tests")]
@@ -22,6 +24,11 @@ internal class SearchEngine<T> : ISearchEngine<T> where T : IDocument
         _documentWriter.AddDocument(document);
     }
 
+    public void AddRange(IEnumerable<T> documents)
+    {
+        _documentWriter.AddDocuments(documents);
+    }
+
     public void Update(T document)
     {
         _documentWriter.UpdateDocument(document);
@@ -40,5 +47,15 @@ internal class SearchEngine<T> : ISearchEngine<T> where T : IDocument
     public SearchResult<T> Search(AllFieldsSearchQuery searchQuery)
     {
         return _documentReader.Search(searchQuery);
+    }
+
+    public SearchResult<T> Search(FullTextSearchQuery searchQuery)
+    {
+        return _documentReader.Search(searchQuery);
+    }
+
+    public void Clear()
+    {
+        _documentWriter.Clear();
     }
 }

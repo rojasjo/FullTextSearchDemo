@@ -13,6 +13,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddSearchEngineServices(new ProductConfiguration());
+builder.Services.AddSearchEngineServices(new MoviesConfiguration());
+
+builder.Services.AddHostedService<MovieImporterService>();
 
 var app = builder.Build();
 

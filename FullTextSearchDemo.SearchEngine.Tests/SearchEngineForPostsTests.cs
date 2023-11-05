@@ -1,5 +1,6 @@
 using FullTextSearchDemo.SearchEngine.Engine;
 using FullTextSearchDemo.SearchEngine.Models;
+using FullTextSearchDemo.SearchEngine.Queries;
 using FullTextSearchDemo.SearchEngine.Services;
 using FullTextSearchDemo.SearchEngine.Tests.TestModels;
 
@@ -236,5 +237,63 @@ public class SearchEngineForPostsTests
         var result = _searchEngine.Search(query);
 
         Assert.That(result.PageNumber, Is.EqualTo(expectedPageNumber));
+    }
+
+    [Test]
+    public void Clear_IndexWithThreeDocuments_IndexIsEmpty()
+    {
+        _searchEngine.Clear();
+
+        var query = new AllFieldsSearchQuery();
+        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
+
+        var result = searchEngine.Search(query).Items.ToList();
+
+        Assert.Multiple(() => { Assert.That(result, Has.Count.EqualTo(0)); });
+    }
+
+    [Test]
+    public void AddRange_AddThreeNewDocuments_IndexHasSixDocuments()
+    {
+        var posts = new List<Post>
+        {
+            new()
+            {
+                Id = 1,
+                Title = "Post about Search Engines",
+                Content = "This is a test post"
+            },
+            new()
+            {
+                Id = 2,
+                Title = "Just another post about Search Engines",
+                Content = "Another test post"
+            },
+            new()
+            {
+                Id = 2,
+                Title = "Search is cool with Apache Lucene.NET",
+                Content = "<h1>Apache Lucene at the core!</h1>"
+            }
+        };
+
+        _searchEngine.AddRange(posts);
+
+        var query = new AllFieldsSearchQuery();
+        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
+
+        var result = searchEngine.Search(query).Items.ToList();
+
+        Assert.That(result, Has.Count.EqualTo(6));
+    }
+    
+    [Test]
+    public void Search_FullTextSearchQueryTypoInSearchTerm_ReturnsOnePost()
+    {
+        var query = new FullTextSearchQuery { SearchTerm = "foy" };
+
+        var result = _searchEngine.Search(query);
+
+        Assert.That(result.Items.Count(), Is.EqualTo(1));
     }
 }
