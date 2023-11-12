@@ -6,15 +6,11 @@ using FullTextSearchDemo.SearchEngine.Tests.TestModels;
 
 namespace FullTextSearchDemo.SearchEngine.Tests;
 
-public class SearchEngineForElementsTests
+public class PrimitivePropertiesTests
 {
     private SearchEngine<Element> _searchEngine = null!;
-    private readonly DocumentWriter<Element> _documentWriter;
-
-    public SearchEngineForElementsTests()
-    {
-        _documentWriter = new DocumentWriter<Element>(new AllPrimitiveConfiguration());
-    }
+    
+    private readonly DocumentWriter<Element> _documentWriter = new(new AllPrimitiveConfiguration());
 
     [SetUp]
     public void Setup()

@@ -1,22 +1,18 @@
 using FullTextSearchDemo.SearchEngine.Engine;
-using FullTextSearchDemo.SearchEngine.Models;
 using FullTextSearchDemo.SearchEngine.Queries;
 using FullTextSearchDemo.SearchEngine.Services;
 using FullTextSearchDemo.SearchEngine.Tests.TestModels;
 
 namespace FullTextSearchDemo.SearchEngine.Tests;
 
-public class SearchEngineForPostsTests
+public class SearchTests
 {
+    private readonly DocumentWriter<Post> _documentWriter = new(new PostTestConfiguration());
+    
     private SearchEngine<Post> _searchEngine = null!;
+
     private const string Title = "Testing Apache Lucene.NET - Ensuring robust search functionality in C#";
-    private readonly DocumentWriter<Post> _documentWriter;
-
-    public SearchEngineForPostsTests()
-    {
-        _documentWriter = new DocumentWriter<Post>(new PostTestConfiguration());
-    }
-
+    
     [SetUp]
     public void Setup()
     {
