@@ -163,6 +163,72 @@ var fullTextQuery = new AllFieldsSearchQuery
 var fullTextResult = searchEngine.Search(fullTextQuery);
 ```
 
+#### Facets
+
+##### Configuration
+To enable a property to act as facet, it is necessary to annotate it with the ```FacetProperty``` attribute.
+
+```csharp
+public class Movie : IDocument
+{
+    ...
+    [FacetProperty]
+    public string TitleType { get; set; }
+    ...
+}
+```
+
+When a property is of type string[], in addition to adding the FacetProperty attribute, it is necessary to configure the field as a multivalued field.
+
+```csharp
+public class Movie : IDocument
+{
+    ...
+    [FacetProperty]
+    public string[] Genres { get; set; }
+    ...
+}
+
+```
+
+The MoviesConfiguration shows how to configure the multivalued field correctly:
+
+```csharp
+public class MoviesConfiguration : IIndexConfiguration<Movie>
+{
+    public string IndexName => "movies-index";
+
+    public FacetConfiguration<Movie>? FacetConfiguration => new()
+    {
+        MultiValuedFields = new[] { nameof(Movie.Genres) }
+    };
+}
+```
+
+If the facet feature is not necessary, you set the ```FacetConfiguration``` to null.
+
+```csharp
+public class PostTestConfiguration : IIndexConfiguration<Post>
+{
+    public string IndexName => "post-test-index";
+
+    public FacetConfiguration<Post>? FacetConfiguration => null;
+}
+```
+
+##### Fitlering
+
+All public queries expose the Facets dictionary, where the key represents the property name and the value represents the facet search value.
+
+
+```csharp
+    var facets = new Dictionary<string, IEnumerable<string?>?>();
+    facets.Add(nameof(Movie.Genres), new string[]{"Comedy", "Drama", "Action"});
+
+    _searchEngine.Search(new AllFieldsSearchQuery { Facets = facets });
+```
+
+
 ## LICENSE
 
 Copyright 2023 José Rojas Jimenez
