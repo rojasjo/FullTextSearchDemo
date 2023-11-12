@@ -1,8 +1,7 @@
 namespace FullTextSearchDemo.Parameters;
 
-public class GetMoviesQuery : QueryParameters
+public class GetMoviesQuery : MoviesQuery
 {
-    
     public string? TitleType { get; set; }
     
     public string? PrimaryTitle { get; set; }

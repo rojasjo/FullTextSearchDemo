@@ -12,6 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddSearchEngineServices(new ProductConfiguration());
 builder.Services.AddSearchEngineServices(new MoviesConfiguration());
 

@@ -23,4 +23,11 @@ public abstract class SearchQuery
         get => _pageSize;
         init => _pageSize = value <= 0 ? DefaultPageSize : value;
     }
+    
+    /// <summary>
+    /// Facets to be used for the search query.
+    /// Example: "Facets": { "Category": [ "Books", "Movies" ], "Rating": [], "Author": ["", "Jimmy"] }
+    /// Finds books and movies without ratings and from authors with the name Jimmy or no name.
+    /// </summary>
+    public IDictionary<string, IEnumerable<string?>?> Facets { get; set; }
 }

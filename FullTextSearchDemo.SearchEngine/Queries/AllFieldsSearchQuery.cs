@@ -9,5 +9,4 @@ public class AllFieldsSearchQuery : ConfigurableQuery
     /// Gets or sets the search term to be used for searching in all string fields.
     /// </summary>
     public string? SearchTerm { get; set; }
-    
 }

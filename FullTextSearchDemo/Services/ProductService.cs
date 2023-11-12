@@ -1,7 +1,6 @@
 using FullTextSearchDemo.Models;
 using FullTextSearchDemo.Parameters;
 using FullTextSearchDemo.SearchEngine;
-using FullTextSearchDemo.SearchEngine.Engine;
 using FullTextSearchDemo.SearchEngine.Queries;
 using FullTextSearchDemo.SearchEngine.Results;
 
@@ -30,12 +29,15 @@ public class ProductService : IProductService
             searchTerm.Add(nameof(Product.Description), query.Description.ToLower());
         }
 
+        var facets = AdjustFacets(query.Categories, query.InSale);
+
         var searchQuery = new FieldSpecificSearchQuery
         {
             SearchTerms = searchTerm,
             PageNumber = query.PageNumber,
             PageSize = query.PageSize,
-            Type = SearchType.ExactMatch
+            Type = SearchType.ExactMatch,
+            Facets = facets
         };
 
         return _searchEngine.Search(searchQuery);
@@ -43,12 +45,15 @@ public class ProductService : IProductService
 
     public SearchResult<Product> SearchProducts(ProductsSearchQuery query)
     {
+        var facets = AdjustFacets(query.Categories, query.InSale);
+        
         var searchQuery = new AllFieldsSearchQuery
         {
             SearchTerm = query.Search,
             PageNumber = query.PageNumber,
             PageSize = query.PageSize,
-            Type = SearchType.FuzzyMatch
+            Type = SearchType.FuzzyMatch,
+            Facets = facets
         };
 
         return _searchEngine.Search(searchQuery);
@@ -78,11 +83,30 @@ public class ProductService : IProductService
 
     public SearchResult<Product> FullSearchProducts(ProductsSearchQuery query)
     {
+        var facets = AdjustFacets(query.Categories, query.InSale);
+        
         return _searchEngine.Search(new FullTextSearchQuery
         {
             SearchTerm = query.Search,
             PageNumber = query.PageNumber,
-            PageSize = query.PageSize
+            PageSize = query.PageSize,
+            Facets = facets
         });
+    }
+    
+    private static Dictionary<string, IEnumerable<string?>?> AdjustFacets(IList<string>? categories, bool? inSale)
+    {
+        var facets = new Dictionary<string, IEnumerable<string?>?>();
+        if (categories != null && categories.Any())
+        {
+            facets.Add("Category", categories);
+        }
+
+        if (inSale.HasValue)
+        {
+            facets.Add("InSale", new[] { inSale.Value.ToString() });
+        }
+
+        return facets;
     }
 }

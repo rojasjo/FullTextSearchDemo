@@ -19,10 +19,10 @@ internal static class LuceneQueryBuilder
         var query = new BooleanQuery();
         var instance = Activator.CreateInstance<T>();
         foreach (var (fieldName, value) in searchFields)
-        {
+        {   
             var type = instance.GetType().GetProperty(fieldName)?.PropertyType;
 
-            if (type == null || type != typeof(string))
+            if (type == null || (type != typeof(string) && type != typeof(string[])))
             {
                 continue;
             }

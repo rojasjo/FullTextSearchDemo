@@ -1,3 +1,4 @@
+using FullTextSearchDemo.SearchEngine.Facets;
 using FullTextSearchDemo.SearchEngine.Models;
 
 namespace FullTextSearchDemo.Models;
@@ -8,6 +9,7 @@ public class Movie : IDocument
     
     public string TConst { get; set; }
     
+    [FacetProperty]
     public string TitleType { get; set; }
     
     public string PrimaryTitle { get; set; }
@@ -22,5 +24,6 @@ public class Movie : IDocument
     
     public int RuntimeMinutes { get; set; }
     
+    [FacetProperty]
     public string[] Genres { get; set; }
 }

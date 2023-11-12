@@ -11,6 +11,8 @@ public class DocumentWriterTests
     private class WrongConfiguration : IIndexConfiguration<Element>
     {
         public string IndexName => string.Empty;
+        
+        public FacetConfiguration<Element>? FacetConfiguration { get; }
     }
 
     [Test]

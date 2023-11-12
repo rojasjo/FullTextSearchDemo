@@ -1,6 +1,8 @@
 using FullTextSearchDemo.Models;
 using FullTextSearchDemo.SearchEngine;
 using FullTextSearchDemo.SearchEngine.Queries;
+using FullTextSearchDemo.SearchEngine.Results;
+using Microsoft.OpenApi.Services;
 
 namespace FullTextSearchDemo.Services;
 
@@ -16,10 +18,19 @@ public class MovieImporterService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var result = _searchEngine.Search(new AllFieldsSearchQuery
+        var result = new SearchResult<Movie>()
         {
-            Type = SearchType.ExactMatch
-        });
+            TotalItems = 0
+        };
+
+        try
+        {
+            result = _searchEngine.Search(new AllFieldsSearchQuery { Type = SearchType.ExactMatch });
+        }
+        catch
+        {
+            //Ignore exception when index does not exist
+        }
 
         if (result.TotalItems > 0)
         {

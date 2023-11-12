@@ -1,3 +1,4 @@
+using FullTextSearchDemo.SearchEngine.Facets;
 using FullTextSearchDemo.SearchEngine.Models;
 
 namespace FullTextSearchDemo.SearchEngine.Results;
@@ -32,4 +33,9 @@ public class SearchResult<T> where T : IDocument
     /// The total number of pages based on the total item count and page size.
     /// </summary>
     public int TotalPages => (int)Math.Ceiling(TotalItems / (double)PageSize);
+    
+    /// <summary>
+    /// Facet results for the search query.
+    /// </summary>
+    public IEnumerable<FacetFilter> Facets { get; set; }
 }
