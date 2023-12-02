@@ -101,7 +101,6 @@ var updatedProduct = new Product
 _searchEngine.Update(updatedProduct);
 ```
 
-
 #### Deleting a Document
 
 To remove a single document from the search engine, use the Remove method providing the document.
@@ -121,11 +120,26 @@ If you desire to remove all documents from the index you can use the Clear metho
 
 ```csharp
  
-  _searchEngine.Clear();
+  _searchEngine.RemoveAll();
   
 ```
 
+#### Free resources
+
+Since the IndexWriter is kept as Singleton everytime that a document is added it is kept in memory.
+To free this memory allocations you can use the method:
+
+
+```csharp
+ 
+  _searchEngine.DisposeResources();
+  
+```
+
+It is still safe to use the 
+
 #### Searching by Specific Fields
+
 You can perform searches based on specific fields within your documents using the FieldSpecificSearchQuery. Here's an example of how to search for products by their name and description.
 
 ```csharp

@@ -7,6 +7,8 @@ public class FacetConfiguration<T> where T : IDocument
 {
     public IEnumerable<string>? MultiValuedFields { set; get; }
     
+    public required string IndexName { get; set; }
+
     internal FacetsConfig GetFacetConfig()
     {
         var facetsConfig = new FacetsConfig();

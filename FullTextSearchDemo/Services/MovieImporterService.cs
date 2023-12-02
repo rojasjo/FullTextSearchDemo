@@ -2,22 +2,24 @@ using FullTextSearchDemo.Models;
 using FullTextSearchDemo.SearchEngine;
 using FullTextSearchDemo.SearchEngine.Queries;
 using FullTextSearchDemo.SearchEngine.Results;
-using Microsoft.OpenApi.Services;
+using Lucene.Net.Index;
 
 namespace FullTextSearchDemo.Services;
 
 public class MovieImporterService : BackgroundService
 {
-    private readonly ISearchEngine<Movie> _searchEngine;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public MovieImporterService(IServiceScopeFactory scopeFactory)
     {
-        using var scope = scopeFactory.CreateScope();
-        _searchEngine = scope.ServiceProvider.GetRequiredService<ISearchEngine<Movie>>();
+        _serviceScopeFactory = scopeFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var searchEngine = scope.ServiceProvider.GetRequiredService<ISearchEngine<Movie>>();
+
         var result = new SearchResult<Movie>()
         {
             TotalItems = 0
@@ -25,11 +27,12 @@ public class MovieImporterService : BackgroundService
 
         try
         {
-            result = _searchEngine.Search(new AllFieldsSearchQuery { Type = SearchType.ExactMatch });
+            result = searchEngine.Search(new AllFieldsSearchQuery { Type = SearchType.ExactMatch });
         }
-        catch
+        catch (IndexNotFoundException ex)
         {
             //Ignore exception when index does not exist
+            Console.WriteLine(ex);
         }
 
         if (result.TotalItems > 0)
@@ -37,6 +40,11 @@ public class MovieImporterService : BackgroundService
             return;
         }
 
+        await ImportMoviesAsync(searchEngine, stoppingToken);
+    }
+
+    private static async Task ImportMoviesAsync(ISearchEngine<Movie> searchEngine, CancellationToken stoppingToken)
+    {
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "title.basics.tsv");
 
         var index = 0;
@@ -64,7 +72,7 @@ public class MovieImporterService : BackgroundService
 
             if (index % 500_000 == 0)
             {
-                _searchEngine.AddRange(batch);
+                searchEngine.AddRange(batch);
                 batch.Clear();
                 var time = DateTime.Now - startTime;
                 Console.WriteLine($"Indexed {index} completed in {time.TotalSeconds} seconds.");
@@ -84,6 +92,9 @@ public class MovieImporterService : BackgroundService
         Console.WriteLine($"Indexing completed in {duration.TotalMinutes} minutes.");
         Console.WriteLine($"Indexing completed in {duration.TotalSeconds} seconds.");
         Console.WriteLine($"Indexed {index} movies.");
+
+        //Avoid to keep in memory all the movies
+        searchEngine.DisposeResources();
     }
 
     private static Movie GetMovie(string line)

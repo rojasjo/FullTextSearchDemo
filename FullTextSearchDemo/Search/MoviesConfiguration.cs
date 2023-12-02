@@ -9,6 +9,7 @@ public class MoviesConfiguration : IIndexConfiguration<Movie>
 
     public FacetConfiguration<Movie>? FacetConfiguration => new()
     {
+        IndexName = "movies-index-facets",
         MultiValuedFields = new[] { nameof(Movie.Genres) }
     };
 }

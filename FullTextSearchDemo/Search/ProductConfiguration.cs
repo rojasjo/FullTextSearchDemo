@@ -7,5 +7,8 @@ public class ProductConfiguration : IIndexConfiguration<Product>
 {
     public string IndexName => "product-index";
 
-    public FacetConfiguration<Product>? FacetConfiguration => new ();
+    public FacetConfiguration<Product>? FacetConfiguration => new ()
+    {
+        IndexName = "product-index-facets",
+    };
 }
