@@ -14,15 +14,16 @@ using LuceneDirectory = Lucene.Net.Store.Directory;
 
 namespace FullTextSearchDemo.SearchEngine.Services;
 
-internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : IDocument
+internal sealed class DocumentWriter<T> : IDisposable, IDocumentWriter<T> where T : IDocument
 {
-    private readonly DirectoryTaxonomyWriter? _taxonomyWriter;
-
-    public IndexWriter Writer { get; }
-
-    public FacetsConfig? FacetsConfig { get; }
-
-    public LuceneDirectory FacetIndexDirectory { get; }
+    private readonly FacetsConfig? _facetsConfig;
+    private readonly string _indexName;
+    private readonly string? _facetIndexName;
+    
+    private LuceneDirectory? _facetIndexDirectory;
+    private bool _initialized;
+    private DirectoryTaxonomyWriter? _taxonomyWriter;
+    private IndexWriter? _writer;
 
     public DocumentWriter(IIndexConfiguration<T> configuration)
     {
@@ -31,10 +32,20 @@ internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : IDocument
             throw new ArgumentException("Index name must be set before using DocumentWriter.");
         }
 
-        FacetsConfig = configuration.FacetConfiguration?.GetFacetConfig();
+        _indexName = configuration.IndexName;
+        _facetIndexName = configuration.FacetConfiguration?.IndexName;
+        _facetsConfig = configuration.FacetConfiguration?.GetFacetConfig();
+    }
+
+    public void Init()
+    {
+        if (_initialized)
+        {
+            return;
+        }
 
         // Open the index directories
-        var indexPath = Path.Combine(Environment.CurrentDirectory, configuration.IndexName);
+        var indexPath = Path.Combine(Environment.CurrentDirectory, _indexName);
         var indexDirectory = FSDirectory.Open(indexPath);
 
         // Create an analyzer to process the text
@@ -42,69 +53,92 @@ internal sealed class DocumentWriter<T> : IDocumentWriter<T> where T : IDocument
         Analyzer standardAnalyzer = new StandardAnalyzer(luceneVersion);
         var indexConfig = new IndexWriterConfig(luceneVersion, standardAnalyzer)
         {
-            OpenMode = OpenMode.CREATE_OR_APPEND
+            OpenMode = OpenMode.CREATE_OR_APPEND,
         };
 
         // Create the index writer with the above configuration
-        Writer = new IndexWriter(indexDirectory, indexConfig);
+        _writer = new IndexWriter(indexDirectory, indexConfig);
 
-        if (FacetsConfig == null)
+        if (_facetsConfig == null || string.IsNullOrWhiteSpace(_facetIndexName))
         {
             return;
         }
 
-        FacetIndexDirectory = FSDirectory.Open($"{indexPath}-facets");
-        _taxonomyWriter = new DirectoryTaxonomyWriter(FacetIndexDirectory);
+        _facetIndexDirectory = FSDirectory.Open(_facetIndexName);
+        _taxonomyWriter = new DirectoryTaxonomyWriter(_facetIndexDirectory);
+
+        _initialized = true;
     }
 
     public void AddDocument([NotNull] T generic)
     {
         var document = generic.ConvertToDocument();
-        Writer.AddDocument(GetDocument(document));
+        _writer?.AddDocument(GetDocument(document));
 
-        Writer.Commit();
-        _taxonomyWriter?.Commit();
+        Commit();
     }
 
     public void Clear()
     {
-        Writer.DeleteAll();
+        _writer?.DeleteAll();
 
-        Writer.Commit();
-        _taxonomyWriter?.Commit();
+        Commit();
     }
 
     public void AddDocuments(IEnumerable<T> documents)
     {
         foreach (var generic in documents)
         {
-            var document = generic.ConvertToDocument();
-            Writer.AddDocument(GetDocument(document));
+           
+            _writer?.AddDocument(GetDocument(generic));
         }
 
-        Writer.Commit();
-        _taxonomyWriter?.Commit();
+        Commit();
     }
 
     public void UpdateDocument([NotNull] T generic)
     {
         var document = generic.ConvertToDocument();
-        Writer.UpdateDocument(new Term(nameof(IDocument.UniqueKey), generic.UniqueKey), GetDocument(document));
+        _writer?.UpdateDocument(new Term(nameof(IDocument.UniqueKey), generic.UniqueKey), GetDocument(document));
 
-        Writer.Commit();
-        _taxonomyWriter?.Commit();
+        Commit();
     }
 
     public void RemoveDocument([NotNull] T generic)
     {
-        Writer.DeleteDocuments(new Term(nameof(IDocument.UniqueKey), generic.UniqueKey));
+        _writer?.DeleteDocuments(new Term(nameof(IDocument.UniqueKey), generic.UniqueKey));
 
-        Writer.Commit();
+        Commit();
+    }
+
+    public void Dispose()
+    {
+        _taxonomyWriter?.Dispose();
+        _facetIndexDirectory?.Dispose();
+        _writer?.Dispose();
+
+        _initialized = false;
+    }
+
+    private void Commit()
+    {
+        _writer?.Commit();
         _taxonomyWriter?.Commit();
     }
 
+    private Document GetDocument(T generic)
+    {
+        var document = generic.ConvertToDocument();
+        return GetDocument(document);
+    }
+    
+    /// <summary>
+    /// Gets the document with facets applied if configured.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <returns></returns>
     private Document GetDocument(Document document)
     {
-        return FacetsConfig != null ? FacetsConfig.Build(_taxonomyWriter, document) : document;
+        return _facetsConfig != null ? _facetsConfig.Build(_taxonomyWriter, document) : document;
     }
 }

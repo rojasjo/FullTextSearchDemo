@@ -7,44 +7,48 @@ namespace FullTextSearchDemo.SearchEngine.Tests;
 
 public class SearchTests
 {
-    private readonly DocumentWriter<Post> _documentWriter = new(new PostTestConfiguration());
-    
     private SearchEngine<Post> _searchEngine = null!;
 
     private const string Title = "Testing Apache Lucene.NET - Ensuring robust search functionality in C#";
-    
+
     [SetUp]
     public void Setup()
     {
-        _documentWriter.AddDocument(new Post
+        var postList = new List<Post>()
         {
-            Id = 1,
-            Title = Title,
-            Content = "<h1>Fox</h1>"
-        });
+            new()
+            {
+                Id = 1,
+                Title = Title,
+                Content = "<h1>Fox</h1>"
+            },
+            new()
+            {
+                Id = 2,
+                Title = "Just another post about Search Engines",
+                Content = "<h1>Solr rocks!</h1>"
+            },
 
-        _documentWriter.AddDocument(new Post
-        {
-            Id = 2,
-            Title = "Just another post about Search Engines",
-            Content = "<h1>Solr rocks!</h1>"
-        });
+            new()
+            {
+                Id = 2,
+                Title = "Search is cool with Apache Lucene.NET",
+                Content = "<h1>Apache Lucene at the core!</h1>"
+            }
+        };
 
-        _documentWriter.AddDocument(new Post
-        {
-            Id = 2,
-            Title = "Search is cool with Apache Lucene.NET",
-            Content = "<h1>Apache Lucene at the core!</h1>"
-        });
+        var configuration = new PostTestConfiguration();
+        _searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(configuration),
+            new DocumentWriter<Post>(configuration));
 
-        _searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
+        _searchEngine.AddRange(postList);
     }
 
     [TearDown]
     public void TearDown()
     {
-        _documentWriter.Writer.DeleteAll();
-        _documentWriter.Writer.Commit();
+        _searchEngine.RemoveAll();
+        _searchEngine.DisposeResources();
     }
 
     [Test]
@@ -60,11 +64,45 @@ public class SearchTests
         _searchEngine.Remove(toDelete);
 
         var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
-        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
 
-        var result = searchEngine.Search(query).Items.ToList();
+        var result = _searchEngine.Search(query).Items.ToList();
 
-        Assert.Multiple(() => { Assert.That(result, Has.Count.EqualTo(0)); });
+        Assert.That(result, Has.Count.EqualTo(0));
+    }
+
+    [Test]
+    public void RemoveAll_WithDocuments_IndexIsEmpty()
+    {
+        _searchEngine.RemoveAll();
+
+        var result = _searchEngine.Search(new AllFieldsSearchQuery());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Items.Count(), Is.EqualTo(0));
+            Assert.That(result.TotalItems, Is.EqualTo(0));
+        });
+    }
+
+    [Test]
+    public void Add_WithNoDocuments_DocumentIsAdded()
+    {
+        _searchEngine.RemoveAll();
+
+        _searchEngine.Add(new Post
+        {
+            Id = 1,
+            Title = "Updated title",
+            Content = "<h1>Fox</h1>"
+        });
+        
+        var result = _searchEngine.Search(new AllFieldsSearchQuery());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Items.Count(), Is.EqualTo(1));
+            Assert.That(result.TotalItems, Is.EqualTo(1));
+        });
     }
 
     [Test]
@@ -80,9 +118,8 @@ public class SearchTests
         _searchEngine.Update(toUpdate);
 
         var query = new AllFieldsSearchQuery { SearchTerm = "fox", Type = SearchType.ExactMatch };
-        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
 
-        var result = searchEngine.Search(query).Items.ToList();
+        var result = _searchEngine.Search(query).Items.ToList();
 
         Assert.Multiple(() =>
         {
@@ -238,14 +275,11 @@ public class SearchTests
     [Test]
     public void Clear_IndexWithThreeDocuments_IndexIsEmpty()
     {
-        _searchEngine.Clear();
+        _searchEngine.RemoveAll();
 
-        var query = new AllFieldsSearchQuery();
-        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
+        var result = _searchEngine.Search(new AllFieldsSearchQuery()).Items.ToList();
 
-        var result = searchEngine.Search(query).Items.ToList();
-
-        Assert.Multiple(() => { Assert.That(result, Has.Count.EqualTo(0)); });
+        Assert.That(result, Has.Count.EqualTo(0));
     }
 
     [Test]
@@ -275,14 +309,11 @@ public class SearchTests
 
         _searchEngine.AddRange(posts);
 
-        var query = new AllFieldsSearchQuery();
-        var searchEngine = new SearchEngine<Post>(new DocumentReader<Post>(_documentWriter), _documentWriter);
-
-        var result = searchEngine.Search(query).Items.ToList();
+        var result = _searchEngine.Search(new AllFieldsSearchQuery()).Items.ToList();
 
         Assert.That(result, Has.Count.EqualTo(6));
     }
-    
+
     [Test]
     public void Search_FullTextSearchQueryTypoInSearchTerm_ReturnsOnePost()
     {

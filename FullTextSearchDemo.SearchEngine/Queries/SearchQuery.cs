@@ -29,5 +29,5 @@ public abstract class SearchQuery
     /// Example: "Facets": { "Category": [ "Books", "Movies" ], "Rating": [], "Author": ["", "Jimmy"] }
     /// Finds books and movies without ratings and from authors with the name Jimmy or no name.
     /// </summary>
-    public IDictionary<string, IEnumerable<string?>?> Facets { get; set; }
+    public IDictionary<string, IEnumerable<string?>?>? Facets { get; set; }
 }

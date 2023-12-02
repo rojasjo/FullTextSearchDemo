@@ -62,6 +62,7 @@ public class ProductService : IProductService
     public void Add(Product product)
     {
         _searchEngine.Add(product);
+        _searchEngine.DisposeResources();
     }
 
     public void Update(int id, Product product)

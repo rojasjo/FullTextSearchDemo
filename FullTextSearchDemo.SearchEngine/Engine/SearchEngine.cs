@@ -3,6 +3,7 @@ using FullTextSearchDemo.SearchEngine.Models;
 using FullTextSearchDemo.SearchEngine.Queries;
 using FullTextSearchDemo.SearchEngine.Results;
 using FullTextSearchDemo.SearchEngine.Services;
+using Lucene.Net.Index;
 
 [assembly: InternalsVisibleTo("FullTextSearchDemo.SearchEngine.Tests")]
 
@@ -17,6 +18,7 @@ internal class SearchEngine<T> : ISearchEngine<T> where T : IDocument
     {
         _documentReader = documentReader;
         _documentWriter = documentWriter;
+        _documentWriter.Init();
     }
 
     public void Add(T document)
@@ -29,6 +31,11 @@ internal class SearchEngine<T> : ISearchEngine<T> where T : IDocument
         _documentWriter.AddDocuments(documents);
     }
 
+    public void DisposeResources()
+    {
+        _documentWriter.Dispose();
+    }
+    
     public void Update(T document)
     {
         _documentWriter.UpdateDocument(document);
@@ -39,23 +46,47 @@ internal class SearchEngine<T> : ISearchEngine<T> where T : IDocument
         _documentWriter.RemoveDocument(document);
     }
 
-    public SearchResult<T> Search(FieldSpecificSearchQuery searchQuery)
+    public SearchResult<T> Search(SearchQuery searchQuery)
     {
-        return _documentReader.Search(searchQuery);
+        try
+        {
+            return searchQuery switch
+            {
+                FieldSpecificSearchQuery fieldSpecificSearchQuery => Search(fieldSpecificSearchQuery),
+                AllFieldsSearchQuery allFieldsSearchQuery => Search(allFieldsSearchQuery),
+                FullTextSearchQuery fullTextSearchQuery => Search(fullTextSearchQuery),
+                _ => throw new ArgumentException($"Invalid search query type: {searchQuery.GetType().Name}")
+            };
+        }
+        catch (IndexNotFoundException)
+        {
+            return new SearchResult<T>
+            {
+                Items = Enumerable.Empty<T>(),
+                PageNumber = searchQuery.PageNumber,
+                PageSize = searchQuery.PageSize,
+                TotalItems = 0
+            };
+        }
     }
-
-    public SearchResult<T> Search(AllFieldsSearchQuery searchQuery)
-    {
-        return _documentReader.Search(searchQuery);
-    }
-
-    public SearchResult<T> Search(FullTextSearchQuery searchQuery)
-    {
-        return _documentReader.Search(searchQuery);
-    }
-
-    public void Clear()
+    
+    public void RemoveAll()
     {
         _documentWriter.Clear();
+    }
+
+    private SearchResult<T> Search(FieldSpecificSearchQuery searchQuery)
+    {
+        return _documentReader.Search(searchQuery);
+    }
+
+    private SearchResult<T> Search(AllFieldsSearchQuery searchQuery)
+    {
+        return _documentReader.Search(searchQuery);
+    }
+
+    private SearchResult<T> Search(FullTextSearchQuery searchQuery)
+    {
+        return _documentReader.Search(searchQuery);
     }
 }
